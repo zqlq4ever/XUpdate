@@ -49,13 +49,17 @@ In order to facilitate the rapid integration of X-Library, I provide a template 
 
 * Support custom request API interface.
 
-* Compatible with Android 6.0, 7.0, 8.0, 9.0 and 10.0.
+* Compatible with Android 6.0 ~ 11.0.
 
 * Support Chinese and English language (internationalization).
 
 * Support the use of the flutter plugin：[flutter_xupdate](https://github.com/xuexiangjys/flutter_xupdate)。
 
 * Support the use of react native plugin：[react-native-xupdate](https://github.com/xuexiangjys/react-native-xupdate)。
+
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/xuexiangjys/XUpdate.svg)](https://starchart.cc/xuexiangjys/XUpdate)
 
 ## Composition structure
 
@@ -105,27 +109,27 @@ IUpdateProxy/XUpdate --- (update) ---> IUpdateChecker --->（Request the server 
 
 * Default version update
 
-![xupdate_default.png](https://img.rruu.net/image/5f9d7b77af102)
+![xupdate_default.png](https://ss.im5i.com/2021/06/14/6TPSz.png)
 
 * Background update
 
-![xupdate_background.png](https://img.rruu.net/image/5f9d7b769901a)
+![xupdate_background.png](https://ss.im5i.com/2021/06/14/6TgXW.png)
 
 * Force version update
 
-![xupdate_force.png](https://img.rruu.net/image/5f9d7b774b990)
+![xupdate_force.png](https://ss.im5i.com/2021/06/14/6Tlw8.png)
 
 * Ignored version update
 
-![xupdate_ignore.png](https://img.rruu.net/image/5f9d7b77ad3be)
+![xupdate_ignore.png](https://ss.im5i.com/2021/06/14/6TVu5.png)
 
 * Custom pop up theme
 
-![xupdate_custom.png](https://img.rruu.net/image/5f9d7b76cee50)
+![xupdate_custom.png](https://ss.im5i.com/2021/06/14/6TGDG.png)
 
 * Use the system pop-up prompt
 
-![xupdate_system.png](https://img.rruu.net/image/5f9d7b77ab42f)
+![xupdate_system.png](https://ss.im5i.com/2021/06/14/6Td86.png)
 
 ### Demo update background service
 
@@ -139,13 +143,13 @@ Because GitHub is slow to visit recently, if you need to experience xupdate bett
 
 [![downloads](https://img.shields.io/badge/downloads-2.1M-blue.svg)](https://www.pgyer.com/xupdate)
 
-![xupdate_download_pugongying.png](https://img.rruu.net/image/5f7d94983032e)
+[![xupdate_download_pugongying.png](https://ss.im5i.com/2021/06/14/6jaJj.png)](https://www.pgyer.com/xupdate)
 
 #### GitHub Download
 
 [![downloads](https://img.shields.io/badge/downloads-2.1M-blue.svg)](https://github.com/xuexiangjys/XUpdate/blob/master/apk/xupdate_demo_1.0.apk?raw=true)
 
-![xupdate_download.png](https://img.rruu.net/image/5f7d949839379)
+[![xupdate_download.png](https://ss.im5i.com/2021/06/14/6jDhD.png)](https://github.com/xuexiangjys/XUpdate/blob/master/apk/xupdate_demo_1.0.apk?raw=true)
 
 ---
 
@@ -176,7 +180,7 @@ The following is the version description. Choose one.
 dependencies {
   ...
   // androidx project
-  implementation 'com.github.xuexiangjys:XUpdate:2.0.7'
+  implementation 'com.github.xuexiangjys:XUpdate:2.0.9'
 }
 ```
 
@@ -539,6 +543,13 @@ _XUpdate.startInstallApk(getContext(), FileUtils.getFileByPath(PathUtils.getFile
 
 If your APK installation is different, you can implement your own APK installer. You only need to implement the `OnInstallListener` interface and use the `XUpdate.setOnInstallListener` set it to take effect.
 
+### 3.10、International
+
+Due to the limited level of the author, only Chinese and English are supported【the default language is English】. If you need to support other languages, you only need to create a new corresponding language file under the `res` of your own project to translate in multiple languages.
+
+Please refer to ***[xupdate_strings.xml](https://github.com/xuexiangjys/XUpdate/blob/master/xupdate-lib/src/main/res/values-zh-rCN/xupdate_strings.xml)***。
+
+What? You don't know Android's multilingual configuration yet? I suggest you take a look at this article：[Android项目国际化多国语言适配](https://blog.csdn.net/qq_29769851/article/details/90606437)
 
 ## Proguard
 
@@ -571,7 +582,7 @@ https://github.com/WVector/AppUpdate
 
 > Your support is the driving force of my maintenance. I will list the list of all the reward personnel at the bottom as the voucher. Please leave the notes of the support items before rewarding!
 
-![pay.png](https://img.rruu.net/image/5f871d00045da)
+![pay.png](https://ss.im5i.com/2021/06/14/6twG6.png)
 
 Thank you for your sponsorship：
 
@@ -579,16 +590,19 @@ Name | Money | Platform
 :-|:-|:-
 *天 | 100￥ | WeChat
 *航 | 10￥ | Alipay
+X*? | 18.88￥ | WeChat
+*网 | 1￥ | WeChat
+Joe | 88.88￥ | WeChat
 
 ## WeChat Subscription
 
 > More information, please scan my personal WeChat Subscription:【我的Android开源之旅】
 
-![gzh_weixin.jpg](https://img.rruu.net/image/5f871cfff3194)
+![](https://ss.im5i.com/2021/06/14/65yoL.jpg)
 
 ## Contact
 
 [![](https://img.shields.io/badge/QQGroup-720212425-blue.svg)](http://shang.qq.com/wpa/qunwpa?idkey=37ea606864cafa3c8a5d6b07f04fd672936a50fd6e535c13702baf705d57e6e8)
 
-![xupdate_qq.jpg](https://img.rruu.net/image/5f7d949844672)
+![xupdate_qq.jpg](https://ss.im5i.com/2021/06/14/6TQuQ.jpg)
 

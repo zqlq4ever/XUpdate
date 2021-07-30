@@ -21,6 +21,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.os.Build;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.TextView;
@@ -178,6 +179,7 @@ public class MainFragment extends XPageSimpleListFragment {
                 break;
             case 8:
                 XUpdate.newBuild(getActivity())
+                        .supportBackgroundUpdate(true)
                         .build()
                         .update(getUpdateEntityFromAssets());
                 break;
@@ -200,7 +202,12 @@ public class MainFragment extends XPageSimpleListFragment {
 
     @MemoryCache
     private UpdateEntity getUpdateEntityFromAssets() {
-        return new DefaultUpdateParser().parseJson(ResourceUtils.readStringFromAssert("update_test.json"));
+        try {
+            return new DefaultUpdateParser().parseJson(ResourceUtils.readStringFromAssert("update_test.json"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Permission(PermissionConsts.STORAGE)
@@ -286,7 +293,9 @@ public class MainFragment extends XPageSimpleListFragment {
     private void changeLocale(Locale locale) {
         Resources resource = getResources();
         Configuration config = resource.getConfiguration();
-        config.setLocale(locale);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            config.setLocale(locale);
+        }
         getResources().updateConfiguration(config, null);
     }
 
