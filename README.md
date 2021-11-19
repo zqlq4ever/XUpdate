@@ -182,7 +182,7 @@ The following is the version description. Choose one.
 dependencies {
   ...
   // androidx project
-  implementation 'com.github.xuexiangjys:XUpdate:2.0.9'
+  implementation 'com.github.xuexiangjys:XUpdate:2.1.0'
 }
 ```
 
@@ -268,6 +268,7 @@ mButtonTextColor | int | 0 | Button text color
 mSupportBackgroundUpdate | boolean | false | Whether background updates are supported
 mWidthRatio | float | -1（Unconstrained） | The ratio of the width of the version update prompter to the screen
 mHeightRatio | float | -1（Unconstrained） | The ratio of the height of the version update prompter to the screen
+mIgnoreDownloadError | boolean | false | Whether to ignore the download exception (the update prompt box will not disappear if the download fails)
 
 ### 2.4、File encryption verification method
 
@@ -327,17 +328,30 @@ It should be noted that with the default version update, the JSON format returne
 
 ```
 {
-  "Code": 0, // 0 means the request is successful, non-0 means failure
-  "Msg": "", // Request error information
-  "UpdateStatus": 1, // 0 means no update, 1 means version update, no forced upgrade is required, and 2 represents version update and forced upgrade is required
+  "Code": 0,
+  "Msg": "",
+  "UpdateStatus": 1,
   "VersionCode": 3,
   "VersionName": "1.0.2",
   "ModifyContent": "1、优化api接口。\r\n2、添加使用demo演示。\r\n3、新增自定义更新服务API接口。\r\n4、优化更新提示界面。",
   "DownloadUrl": "https://raw.githubusercontent.com/xuexiangjys/XUpdate/master/apk/xupdate_demo_1.0.2.apk",
-  "ApkSize": 2048
-  "ApkMd5": "..."  // If the MD5 value of APK is not available, there is no guarantee that the APK is complete and will be downloaded again every time. The framework uses MD5 encryption by default.
+  "ApkSize": 2048,
+  "ApkMd5": ""
 }
 ```
+
+Field description:
+
+* Code: 0 means the request is successful, non-0 means failure.
+* Msg: Request error information.
+* UpdateStatus: 0 means no update, 1 means version update, no forced upgrade is required, and 2 represents version update and forced upgrade is required.
+* VersionCode: Version number, self incrementing. Used to compare whether the version is the latest version.
+* VersionName: Display name of version.
+* ModifyContent: Content of version update.
+* DownloadUrl: Download address of application APK file.
+* ApkSize: The file size of the application APK file, in KB.
+* ApkMd5: Apply the MD5 value of the APK file. If not, the APK cannot be guaranteed to be complete and will be downloaded again every time. The framework uses MD5 encryption by default.
+
 
 ### 3.2、Automatic version update
 
@@ -510,7 +524,7 @@ public class CustomUpdatePrompter implements IUpdatePrompter {
 
 ```
 XUpdate.newBuild(getActivity())
-        .apkCacheDir(PathUtils.getExtDownloadsPath())  // Set the root directory of the download cache
+        .apkCacheDir(PathUtils.getAppExtCachePath())  // Set the root directory of the download cache
         .build()
         .download(mDownloadUrl, new OnFileDownloadListener() {   // Set the download address and download listener
             @Override
