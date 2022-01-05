@@ -21,6 +21,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.Window;
@@ -101,7 +102,7 @@ public class UpdateDialog extends BaseDialog implements View.OnClickListener, ID
     /**
      * 更新代理
      */
-    private IPrompterProxy mIPrompterProxy;
+    private IPrompterProxy mPrompterProxy;
     /**
      * 提示器参数信息
      */
@@ -165,27 +166,32 @@ public class UpdateDialog extends BaseDialog implements View.OnClickListener, ID
 
         setCancelable(false);
         setCanceledOnTouchOutside(false);
+        setIsSyncSystemUiVisibility(true);
     }
 
     //====================生命周期============================//
 
+    private String getUrl() {
+        return mPrompterProxy != null ? mPrompterProxy.getUrl() : "";
+    }
+
     @Override
     public void show() {
-        _XUpdate.setIsShowUpdatePrompter(true);
+        _XUpdate.setIsPrompterShow(getUrl(), true);
         super.show();
     }
 
     @Override
     public void dismiss() {
-        _XUpdate.setIsShowUpdatePrompter(false);
+        _XUpdate.setIsPrompterShow(getUrl(), false);
         clearIPrompterProxy();
         super.dismiss();
     }
 
     private void clearIPrompterProxy() {
-        if (mIPrompterProxy != null) {
-            mIPrompterProxy.recycle();
-            mIPrompterProxy = null;
+        if (mPrompterProxy != null) {
+            mPrompterProxy.recycle();
+            mPrompterProxy = null;
         }
     }
     //====================UI构建============================//
@@ -244,7 +250,12 @@ public class UpdateDialog extends BaseDialog implements View.OnClickListener, ID
      * @param heightRatio     高和屏幕的比例
      */
     private void setDialogTheme(int themeColor, int topResId, int buttonTextColor, float widthRatio, float heightRatio) {
-        mIvTop.setImageResource(topResId);
+        Drawable topDrawable = _XUpdate.getTopDrawable(mPromptEntity.getTopDrawableTag());
+        if (topDrawable != null) {
+            mIvTop.setImageDrawable(topDrawable);
+        } else {
+            mIvTop.setImageResource(topResId);
+        }
         DrawableUtils.setBackgroundCompat(mBtnUpdate, DrawableUtils.getDrawable(UpdateUtils.dip2px(4, getContext()), themeColor));
         DrawableUtils.setBackgroundCompat(mBtnBackgroundUpdate, DrawableUtils.getDrawable(UpdateUtils.dip2px(4, getContext()), themeColor));
         mNumberProgressBar.setProgressTextColor(themeColor);
@@ -252,6 +263,10 @@ public class UpdateDialog extends BaseDialog implements View.OnClickListener, ID
         mBtnUpdate.setTextColor(buttonTextColor);
         mBtnBackgroundUpdate.setTextColor(buttonTextColor);
 
+        initWindow(widthRatio, heightRatio);
+    }
+
+    private void initWindow(float widthRatio, float heightRatio) {
         Window window = getWindow();
         if (window == null) {
             return;
@@ -269,8 +284,8 @@ public class UpdateDialog extends BaseDialog implements View.OnClickListener, ID
 
     //====================更新功能============================//
 
-    public UpdateDialog setIPrompterProxy(IPrompterProxy prompterProxy) {
-        mIPrompterProxy = prompterProxy;
+    private UpdateDialog setIPrompterProxy(IPrompterProxy prompterProxy) {
+        mPrompterProxy = prompterProxy;
         return this;
     }
 
@@ -288,11 +303,11 @@ public class UpdateDialog extends BaseDialog implements View.OnClickListener, ID
             }
         } else if (i == R.id.btn_background_update) {
             //点击后台更新按钮
-            mIPrompterProxy.backgroundDownload();
+            mPrompterProxy.backgroundDownload();
             dismiss();
         } else if (i == R.id.iv_close) {
             //点击关闭按钮
-            mIPrompterProxy.cancelDownload();
+            mPrompterProxy.cancelDownload();
             dismiss();
         } else if (i == R.id.tv_ignore) {
             //点击忽略按钮
@@ -312,8 +327,8 @@ public class UpdateDialog extends BaseDialog implements View.OnClickListener, ID
                 showInstallButton();
             }
         } else {
-            if (mIPrompterProxy != null) {
-                mIPrompterProxy.startDownload(mUpdateEntity, new WeakFileDownloadListener(this));
+            if (mPrompterProxy != null) {
+                mPrompterProxy.startDownload(mUpdateEntity, new WeakFileDownloadListener(this));
             }
             //忽略版本在点击更新按钮后隐藏
             if (mUpdateEntity.isIgnorable()) {
@@ -417,14 +432,14 @@ public class UpdateDialog extends BaseDialog implements View.OnClickListener, ID
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
-        _XUpdate.setIsShowUpdatePrompter(true);
+        _XUpdate.setIsPrompterShow(getUrl(), true);
     }
 
     @Override
     public void onDetachedFromWindow() {
-        _XUpdate.setIsShowUpdatePrompter(false);
+        _XUpdate.setIsPrompterShow(getUrl(), false);
+        clearIPrompterProxy();
         super.onDetachedFromWindow();
     }
-
 
 }

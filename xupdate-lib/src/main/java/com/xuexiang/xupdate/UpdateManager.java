@@ -17,6 +17,9 @@
 package com.xuexiang.xupdate;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 
 import androidx.annotation.ColorInt;
@@ -44,7 +47,6 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import static com.xuexiang.xupdate.entity.UpdateError.ERROR.CHECK_NO_NETWORK;
-import static com.xuexiang.xupdate.entity.UpdateError.ERROR.CHECK_NO_NEW_VERSION;
 import static com.xuexiang.xupdate.entity.UpdateError.ERROR.CHECK_NO_WIFI;
 import static com.xuexiang.xupdate.entity.UpdateError.ERROR.PROMPT_ACTIVITY_DESTROY;
 
@@ -58,7 +60,7 @@ public class UpdateManager implements IUpdateProxy {
     /**
      * 版本更新代理
      */
-    private IUpdateProxy mIUpdateProxy;
+    private IUpdateProxy mUpdateProxy;
     /**
      * 更新信息
      */
@@ -159,7 +161,7 @@ public class UpdateManager implements IUpdateProxy {
      * @return 版本更新管理者
      */
     public UpdateManager setIUpdateProxy(IUpdateProxy updateProxy) {
-        mIUpdateProxy = updateProxy;
+        mUpdateProxy = updateProxy;
         return this;
     }
 
@@ -167,6 +169,11 @@ public class UpdateManager implements IUpdateProxy {
     @Override
     public Context getContext() {
         return mContext != null ? mContext.get() : null;
+    }
+
+    @Override
+    public String getUrl() {
+        return mUpdateUrl;
     }
 
     @Override
@@ -180,8 +187,8 @@ public class UpdateManager implements IUpdateProxy {
     @Override
     public void update() {
         UpdateLog.d("XUpdate.update()启动:" + toString());
-        if (mIUpdateProxy != null) {
-            mIUpdateProxy.update();
+        if (mUpdateProxy != null) {
+            mUpdateProxy.update();
         } else {
             doUpdate();
         }
@@ -215,8 +222,8 @@ public class UpdateManager implements IUpdateProxy {
      */
     @Override
     public void onBeforeCheck() {
-        if (mIUpdateProxy != null) {
-            mIUpdateProxy.onBeforeCheck();
+        if (mUpdateProxy != null) {
+            mUpdateProxy.onBeforeCheck();
         } else {
             mIUpdateChecker.onBeforeCheck();
         }
@@ -228,8 +235,8 @@ public class UpdateManager implements IUpdateProxy {
     @Override
     public void checkVersion() {
         UpdateLog.d("开始检查版本信息...");
-        if (mIUpdateProxy != null) {
-            mIUpdateProxy.checkVersion();
+        if (mUpdateProxy != null) {
+            mUpdateProxy.checkVersion();
         } else {
             if (TextUtils.isEmpty(mUpdateUrl)) {
                 throw new NullPointerException("[UpdateManager] : mUpdateUrl 不能为空");
@@ -243,8 +250,8 @@ public class UpdateManager implements IUpdateProxy {
      */
     @Override
     public void onAfterCheck() {
-        if (mIUpdateProxy != null) {
-            mIUpdateProxy.onAfterCheck();
+        if (mUpdateProxy != null) {
+            mUpdateProxy.onAfterCheck();
         } else {
             mIUpdateChecker.onAfterCheck();
         }
@@ -252,8 +259,8 @@ public class UpdateManager implements IUpdateProxy {
 
     @Override
     public boolean isAsyncParser() {
-        if (mIUpdateProxy != null) {
-            return mIUpdateProxy.isAsyncParser();
+        if (mUpdateProxy != null) {
+            return mUpdateProxy.isAsyncParser();
         } else {
             return mIUpdateParser.isAsyncParser();
         }
@@ -268,8 +275,8 @@ public class UpdateManager implements IUpdateProxy {
     @Override
     public UpdateEntity parseJson(@NonNull String json) throws Exception {
         UpdateLog.i("服务端返回的最新版本信息:" + json);
-        if (mIUpdateProxy != null) {
-            mUpdateEntity = mIUpdateProxy.parseJson(json);
+        if (mUpdateProxy != null) {
+            mUpdateEntity = mUpdateProxy.parseJson(json);
         } else {
             mUpdateEntity = mIUpdateParser.parseJson(json);
         }
@@ -280,8 +287,8 @@ public class UpdateManager implements IUpdateProxy {
     @Override
     public void parseJson(@NonNull String json, final IUpdateParseCallback callback) throws Exception {
         UpdateLog.i("服务端返回的最新版本信息:" + json);
-        if (mIUpdateProxy != null) {
-            mIUpdateProxy.parseJson(json, new IUpdateParseCallback() {
+        if (mUpdateProxy != null) {
+            mUpdateProxy.parseJson(json, new IUpdateParseCallback() {
                 @Override
                 public void onParseResult(UpdateEntity updateEntity) {
                     mUpdateEntity = refreshParams(updateEntity);
@@ -332,9 +339,9 @@ public class UpdateManager implements IUpdateProxy {
                 _XUpdate.startInstallApk(getContext(), UpdateUtils.getApkFileByUpdateEntity(mUpdateEntity), mUpdateEntity.getDownLoadEntity());
             }
         } else {
-            if (mIUpdateProxy != null) {
+            if (mUpdateProxy != null) {
                 //否则显示版本更新提示
-                mIUpdateProxy.findNewVersion(updateEntity, updateProxy);
+                mUpdateProxy.findNewVersion(updateEntity, updateProxy);
             } else {
                 if (mIUpdatePrompter instanceof DefaultUpdatePrompter) {
                     Context context = getContext();
@@ -358,8 +365,8 @@ public class UpdateManager implements IUpdateProxy {
     @Override
     public void noNewVersion(Throwable throwable) {
         UpdateLog.i(throwable != null ? "未发现新版本:" + throwable.getMessage() : "未发现新版本!");
-        if (mIUpdateProxy != null) {
-            mIUpdateProxy.noNewVersion(throwable);
+        if (mUpdateProxy != null) {
+            mUpdateProxy.noNewVersion(throwable);
         } else {
             mIUpdateChecker.noNewVersion(throwable);
         }
@@ -369,8 +376,8 @@ public class UpdateManager implements IUpdateProxy {
     public void startDownload(@NonNull UpdateEntity updateEntity, @Nullable OnFileDownloadListener downloadListener) {
         UpdateLog.i("开始下载更新文件:" + updateEntity);
         updateEntity.setIUpdateHttpService(mIUpdateHttpService);
-        if (mIUpdateProxy != null) {
-            mIUpdateProxy.startDownload(updateEntity, downloadListener);
+        if (mUpdateProxy != null) {
+            mUpdateProxy.startDownload(updateEntity, downloadListener);
         } else {
             mIUpdateDownloader.startDownload(updateEntity, downloadListener);
         }
@@ -382,8 +389,8 @@ public class UpdateManager implements IUpdateProxy {
     @Override
     public void backgroundDownload() {
         UpdateLog.i("点击了后台更新按钮, 在通知栏中显示下载进度...");
-        if (mIUpdateProxy != null) {
-            mIUpdateProxy.backgroundDownload();
+        if (mUpdateProxy != null) {
+            mUpdateProxy.backgroundDownload();
         } else {
             mIUpdateDownloader.backgroundDownload();
         }
@@ -392,8 +399,8 @@ public class UpdateManager implements IUpdateProxy {
     @Override
     public void cancelDownload() {
         UpdateLog.d("正在取消更新文件的下载...");
-        if (mIUpdateProxy != null) {
-            mIUpdateProxy.cancelDownload();
+        if (mUpdateProxy != null) {
+            mUpdateProxy.cancelDownload();
         } else {
             mIUpdateDownloader.cancelDownload();
         }
@@ -402,9 +409,9 @@ public class UpdateManager implements IUpdateProxy {
     @Override
     public void recycle() {
         UpdateLog.d("正在回收资源...");
-        if (mIUpdateProxy != null) {
-            mIUpdateProxy.recycle();
-            mIUpdateProxy = null;
+        if (mUpdateProxy != null) {
+            mUpdateProxy.recycle();
+            mUpdateProxy = null;
         }
         if (mParams != null) {
             mParams.clear();
@@ -712,6 +719,34 @@ public class UpdateManager implements IUpdateProxy {
          */
         public Builder promptTopResId(@DrawableRes int topResId) {
             promptEntity.setTopResId(topResId);
+            return this;
+        }
+
+        /**
+         * 设置顶部背景图片
+         *
+         * @param topDrawable 顶部背景图片
+         * @return this
+         */
+        public Builder promptTopDrawable(Drawable topDrawable) {
+            if (topDrawable != null) {
+                String tag = _XUpdate.saveTopDrawable(topDrawable);
+                promptEntity.setTopDrawableTag(tag);
+            }
+            return this;
+        }
+
+        /**
+         * 设置顶部背景图片
+         *
+         * @param topBitmap 顶部背景图片
+         * @return this
+         */
+        public Builder promptTopBitmap(Bitmap topBitmap) {
+            if (topBitmap != null) {
+                String tag = _XUpdate.saveTopDrawable(new BitmapDrawable(context.getResources(), topBitmap));
+                promptEntity.setTopDrawableTag(tag);
+            }
             return this;
         }
 

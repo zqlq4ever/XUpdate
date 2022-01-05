@@ -22,6 +22,7 @@ import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -51,6 +52,7 @@ import com.xuexiang.xupdate.entity.PromptEntity;
 import com.xuexiang.xupdate.entity.UpdateEntity;
 import com.xuexiang.xupdate.proxy.IPrompterProxy;
 import com.xuexiang.xupdate.utils.ColorUtils;
+import com.xuexiang.xupdate.utils.DialogUtils;
 import com.xuexiang.xupdate.utils.DrawableUtils;
 import com.xuexiang.xupdate.utils.UpdateUtils;
 
@@ -140,22 +142,33 @@ public class UpdateDialogFragment extends DialogFragment implements View.OnClick
         args.putParcelable(KEY_UPDATE_ENTITY, updateEntity);
         args.putParcelable(KEY_UPDATE_PROMPT_ENTITY, promptEntity);
         fragment.setArguments(args);
-        setsIPrompterProxy(prompterProxy);
+        setIPrompterProxy(prompterProxy);
         fragment.show(fragmentManager);
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        _XUpdate.setIsShowUpdatePrompter(true);
+        _XUpdate.setIsPrompterShow(getUrl(), true);
         setStyle(DialogFragment.STYLE_NO_TITLE, R.style.XUpdate_Fragment_Dialog);
         mCurrentOrientation = getResources().getConfiguration().orientation;
-
     }
 
     @Override
     public void onStart() {
+        Dialog dialog = getDialog();
+        if (dialog == null) {
+            return;
+        }
+        Window window = dialog.getWindow();
+        if (window == null) {
+            return;
+        }
+        window.addFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+        // 在super.onStart();中调用mDialog.show
         super.onStart();
+        DialogUtils.syncSystemUiVisibility(getActivity(), window);
+        window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
         initDialog();
     }
 
@@ -188,6 +201,7 @@ public class UpdateDialogFragment extends DialogFragment implements View.OnClick
         }
         window.setAttributes(lp);
     }
+
 
     @Nullable
     @Override
@@ -308,7 +322,12 @@ public class UpdateDialogFragment extends DialogFragment implements View.OnClick
      * @param topResId   图片
      */
     private void setDialogTheme(int themeColor, int topResId, int buttonTextColor) {
-        mIvTop.setImageResource(topResId);
+        Drawable topDrawable = _XUpdate.getTopDrawable(mPromptEntity.getTopDrawableTag());
+        if (topDrawable != null) {
+            mIvTop.setImageDrawable(topDrawable);
+        } else {
+            mIvTop.setImageResource(topResId);
+        }
         DrawableUtils.setBackgroundCompat(mBtnUpdate, DrawableUtils.getDrawable(UpdateUtils.dip2px(4, getContext()), themeColor));
         DrawableUtils.setBackgroundCompat(mBtnBackgroundUpdate, DrawableUtils.getDrawable(UpdateUtils.dip2px(4, getContext()), themeColor));
         mNumberProgressBar.setProgressTextColor(themeColor);
@@ -487,6 +506,7 @@ public class UpdateDialogFragment extends DialogFragment implements View.OnClick
      * 弹窗消失
      */
     private void dismissDialog() {
+        _XUpdate.setIsPrompterShow(getUrl(), false);
         clearIPrompterProxy();
         dismissAllowingStateLoss();
     }
@@ -494,7 +514,7 @@ public class UpdateDialogFragment extends DialogFragment implements View.OnClick
     @Override
     public void show(@NonNull FragmentManager manager, @Nullable String tag) {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN) {
-            if (manager.isDestroyed()) {
+            if (manager.isDestroyed() || manager.isStateSaved()) {
                 return;
             }
         }
@@ -508,7 +528,7 @@ public class UpdateDialogFragment extends DialogFragment implements View.OnClick
     /**
      * 显示更新提示
      *
-     * @param manager
+     * @param manager 管理者
      */
     public void show(FragmentManager manager) {
         show(manager, "update_dialog");
@@ -516,12 +536,13 @@ public class UpdateDialogFragment extends DialogFragment implements View.OnClick
 
     @Override
     public void onDestroyView() {
-        _XUpdate.setIsShowUpdatePrompter(false);
+        _XUpdate.setIsPrompterShow(getUrl(), false);
+        clearIPrompterProxy();
         super.onDestroyView();
     }
 
-    private static void setsIPrompterProxy(IPrompterProxy sIPrompterProxy) {
-        UpdateDialogFragment.sIPrompterProxy = sIPrompterProxy;
+    private static void setIPrompterProxy(IPrompterProxy prompterProxy) {
+        UpdateDialogFragment.sIPrompterProxy = prompterProxy;
     }
 
     private static void clearIPrompterProxy() {
@@ -530,7 +551,6 @@ public class UpdateDialogFragment extends DialogFragment implements View.OnClick
             sIPrompterProxy = null;
         }
     }
-
 
     @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
@@ -550,6 +570,10 @@ public class UpdateDialogFragment extends DialogFragment implements View.OnClick
             initView(root);
             initData();
         }
+    }
+
+    private String getUrl() {
+        return sIPrompterProxy != null ? sIPrompterProxy.getUrl() : "";
     }
 
 }

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
@@ -114,7 +115,7 @@ public class UpdateDialogActivity extends AppCompatActivity implements View.OnCl
         if (!(context instanceof Activity)) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         }
-        setsIPrompterProxy(prompterProxy);
+        setIPrompterProxy(prompterProxy);
         context.startActivity(intent);
     }
 
@@ -122,7 +123,7 @@ public class UpdateDialogActivity extends AppCompatActivity implements View.OnCl
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.xupdate_layout_update_prompter);
-        _XUpdate.setIsShowUpdatePrompter(true);
+        _XUpdate.setIsPrompterShow(getUrl(), true);
         initView();
         initData();
     }
@@ -234,7 +235,12 @@ public class UpdateDialogActivity extends AppCompatActivity implements View.OnCl
      * @param topResId   图片
      */
     private void setDialogTheme(int themeColor, int topResId, int buttonTextColor) {
-        mIvTop.setImageResource(topResId);
+        Drawable topDrawable = _XUpdate.getTopDrawable(mPromptEntity.getTopDrawableTag());
+        if (topDrawable != null) {
+            mIvTop.setImageDrawable(topDrawable);
+        } else {
+            mIvTop.setImageResource(topResId);
+        }
         DrawableUtils.setBackgroundCompat(mBtnUpdate, DrawableUtils.getDrawable(UpdateUtils.dip2px(4, this), themeColor));
         DrawableUtils.setBackgroundCompat(mBtnBackgroundUpdate, DrawableUtils.getDrawable(UpdateUtils.dip2px(4, this), themeColor));
         mNumberProgressBar.setProgressTextColor(themeColor);
@@ -449,14 +455,14 @@ public class UpdateDialogActivity extends AppCompatActivity implements View.OnCl
     @Override
     protected void onStop() {
         if (isFinishing()) {
-            _XUpdate.setIsShowUpdatePrompter(false);
+            _XUpdate.setIsPrompterShow(getUrl(), false);
             clearIPrompterProxy();
         }
         super.onStop();
     }
 
-    private static void setsIPrompterProxy(IPrompterProxy sIPrompterProxy) {
-        UpdateDialogActivity.sIPrompterProxy = sIPrompterProxy;
+    private static void setIPrompterProxy(IPrompterProxy prompterProxy) {
+        UpdateDialogActivity.sIPrompterProxy = prompterProxy;
     }
 
     private static void clearIPrompterProxy() {
@@ -464,6 +470,10 @@ public class UpdateDialogActivity extends AppCompatActivity implements View.OnCl
             sIPrompterProxy.recycle();
             sIPrompterProxy = null;
         }
+    }
+
+    private String getUrl() {
+        return sIPrompterProxy != null ? sIPrompterProxy.getUrl() : "";
     }
 
 }

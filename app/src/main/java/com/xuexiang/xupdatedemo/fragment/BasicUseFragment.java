@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 xuexiangjys(xuexiangjys@163.com)
+ * Copyright (C) 2021 xuexiangjys(xuexiangjys@163.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,56 +12,57 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
 
-package com.xuexiang.xupdatedemo.activity;
+package com.xuexiang.xupdatedemo.fragment;
 
-import android.app.Activity;
-import android.os.Bundle;
-import android.view.View;
-
-import androidx.annotation.Nullable;
-
+import com.xuexiang.xpage.annotation.Page;
+import com.xuexiang.xpage.base.XPageSimpleListFragment;
 import com.xuexiang.xupdate.XUpdate;
 import com.xuexiang.xupdatedemo.Constants;
-import com.xuexiang.xupdatedemo.R;
+
+import java.util.List;
 
 /**
  * @author xuexiang
- * @since 2018/7/24 上午10:38
+ * @since 2021/11/25 10:32 PM
  */
-public class UpdateActivity extends Activity implements View.OnClickListener {
+@Page(name = "基础使用")
+public class BasicUseFragment extends XPageSimpleListFragment {
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_update);
+    protected List<String> initSimpleData(List<String> lists) {
+        lists.add("默认App更新");
+        lists.add("默认App更新 + 支持后台更新");
+        lists.add("版本更新(自动模式)");
+        lists.add("强制版本更新");
+        return lists;
     }
 
     @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.btn_update:
-                XUpdate.newBuild(this)
+    protected void onItemClick(int position) {
+        switch (position) {
+            case 0:
+                XUpdate.newBuild(getActivity())
                         .updateUrl(Constants.DEFAULT_UPDATE_URL)
                         .update();
                 break;
-            case R.id.btn_support_background_update:
-                XUpdate.newBuild(this)
+            case 1:
+                XUpdate.newBuild(getActivity())
                         .updateUrl(Constants.DEFAULT_UPDATE_URL)
-                        .promptWidthRatio(0.7F)
                         .supportBackgroundUpdate(true)
                         .update();
                 break;
-            case R.id.btn_auto_update:
-                XUpdate.newBuild(this)
+            case 2:
+                XUpdate.newBuild(getActivity())
                         .updateUrl(Constants.DEFAULT_UPDATE_URL)
                         //如果需要完全无人干预，自动更新，需要root权限【静默安装需要】
                         .isAutoMode(true)
                         .update();
                 break;
-            case R.id.btn_force_update:
-                XUpdate.newBuild(this)
+            case 3:
+                XUpdate.newBuild(getActivity())
                         .updateUrl(Constants.FORCED_UPDATE_URL)
                         .update();
                 break;
@@ -69,4 +70,5 @@ public class UpdateActivity extends Activity implements View.OnClickListener {
                 break;
         }
     }
+
 }
